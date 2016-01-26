@@ -1,27 +1,35 @@
 using LinSpaces2
 
-function bench_fill(N, linspc)
-    B = zeros(Float64, length(linspc))
+function bench_fill(N, L)
+    B = zeros(Float64, length(L))
     for i=1:N
-        for j=1:length(linspc)
-            B[j] = linspc[j]
+        for j=1:length(L)
+            B[j] = L[j]
         end
     end
 end
 
-function bench_collect(N, linspc)
+function bench_collect(N, L)
     for i=1:N
-        collect(linspc)
+        collect(L)
     end
 end
 
-function bench_sum(N, linspc)
+function bench_sum(N, L)
     s = 0.0
     for i=1:N
-        for j=1:length(linspc)
-            s += linspc[j]
+        for j=1:length(L)
+            s += L[j]
         end
-        s /= length(linspc)
+        s /= length(L)
+    end
+    s
+end
+
+function bench_simd_sum(L)
+    s = zero(eltype(L))
+    @inbounds @simd for x in L
+        s += x
     end
     s
 end
@@ -48,35 +56,40 @@ bench_collect(1, L2)
 @time bench_collect(N, L1)
 @time bench_collect(N, L2)
 
+println("bench_simd_sum")
+bench_simd_sum(linspace(1,5,10^7))
+bench_simd_sum(linspace2(1,5,10^7))
+@time bench_simd_sum(linspace(1,5,10^7))
+@time bench_simd_sum(linspace2(1,5,10^7))
 
-function bench_mult_sum(N, linspc)
-    a = first(linspc)
-    b = last(linspc)
-    len = length(linspc)
+function bench_mult_sum(N, L)
+    a = first(L)
+    b = last(L)
+    len = length(L)
     mult = Float64(1/(N-1))
     s = 0.0
     for i=1:N
-        for j=1:length(linspc)
+        for j=1:length(L)
             l = (len-j)*mult*a + (j-1)*mult*b
             s += l
         end
-        s /= length(linspc)
+        s /= length(L)
     end
     s
 end
 
-function bench_div_sum(N, linspc)
-    a = first(linspc)
-    b = last(linspc)
-    len = length(linspc)
+function bench_div_sum(N, L)
+    a = first(L)
+    b = last(L)
+    len = length(L)
     divisor = Float64(N-1.0)
     s = 0.0
     for i=1:N
-        for j=1:length(linspc)
+        for j=1:length(L)
             l = ((len-j)*a + (j-1)*b)/divisor
             s += l
         end
-        s /= length(linspc)
+        s /= length(L)
     end
     s
 end
