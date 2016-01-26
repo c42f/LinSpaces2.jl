@@ -51,6 +51,8 @@ step{T}(r::LinSpace2{T}) = (r._stop - r._start)*r.mult
 length{T}(r::LinSpace2{T}) = Integer(r.len + signbit(r.len - 1))
 
 first{T}(r::LinSpace2{T}) = unsafe_getindex(r,1)
+# FIXME: last() is wrong because it passes a T rather than an Integer, but for
+# some mysterious reason this breakage makes the @simd benchmark much faster.
 last{T}(r::LinSpace2{T}) = unsafe_getindex(r,r.len)
 
 start{T}(r::LinSpace2{T}) = 1
